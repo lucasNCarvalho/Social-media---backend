@@ -1,0 +1,17 @@
+#docker run --name api-solid-pg -e POSTGRESQL_USERNAME=docker -e POSTGRESQL_PASSWORD=docker -e POSTGRESQL_DATABASE=apisolid -p 5432:5432  bitnami/postgresql
+
+version: '3'
+
+services:
+  api-loomy-pg:
+    image: bitnami/postgresql
+    ports: 
+      - 5432:5432
+    environment:
+      - POSTGRESQL_USERNAME=docker
+      - POSTGRESQL_PASSWORD=docker
+      - POSTGRESQL_DATABASE=apisolid
+
+#docker compose up -d   this command will start our docker service
+#docker compose down    this command will drop the tables and data, everything to zero and stop the aplication
+#docker compose stop    this command will just stop de aplication, keep all data

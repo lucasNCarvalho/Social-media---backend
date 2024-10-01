@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(uuid())
+  name          String
+  userName      String         @unique
+  email         String         @unique
+  imageUrl      String?
+  bio           String?
+  password_hash String
+  created_at    DateTime       @default(now())
+  RefreshToken  RefreshToken[]
+  posts         Post[]
+  likedPosts    Post[]         @relation("UserLikedPosts")
+  savedPosts    Save[]
+  followers     Follow[]       @relation("Followers")
+  following     Follow[]       @relation("Following")
+
+  @@map("users")
+}
+
+model Post {
+  id         String   @id @default(uuid())
+  creatorId  String
+  caption    String
+  tags       String[]
+  location   String?
+  created_at DateTime @default(now())
+  creator    User     @relation(fields: [creatorId], references: [id])
+  likes      User[]   @relation("UserLikedPosts")
+  saves      Save[]
+  image      Image[]
+
+  @@map("posts")
+}
+
+model Image {
+  id        String   @id @default(uuid())
+  postId    String
+  url       String
+  fileName  String
+  key       Int
+  typeFile  String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id])
+
+  @@map("image")
+}
+
+model Save {
+  id        String   @id @default(uuid())
+  userId    String
+  postId    String
+  user      User     @relation(fields: [userId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@map("saves")
+}
+
+model Follow {
+  followerId  String
+  followingId String
+
+  follower  User @relation("Followers", fields: [followerId], references: [id])
+  following User @relation("Following", fields: [followingId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@id([followerId, followingId])
+  @@map("follows")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("refreshToken")
+}
