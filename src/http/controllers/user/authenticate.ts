@@ -11,8 +11,9 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
     })
 
     const {email, password} = authenticateBodySchema.parse(request.body)
-    console.log('autenticando')
+    console.log('a', email)
     try {
+        console.log('a', email)
         const authenticate = makeAuthenticateFactory()
 
         const {user} = await authenticate.execute({
@@ -29,13 +30,11 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
         const refreshToken = await reply.jwtSign({}, {
             sign: {
              sub: user.id,
-             expiresIn: '1m'
+             expiresIn: '7d'
             }
         })
 
-        authenticate.saveRefreshToken({refreshToken, userId: user.id})
-
-       //todo: produção o secure precisa ser true, provavelmente usar um .env aqui
+       
        return reply
        .setCookie('refreshToken', refreshToken, {
            path: '/',

@@ -3,66 +3,67 @@ import { Readable } from "stream";
 import detect from 'magic-bytes.js';
 
 import { randomUUID } from "crypto";
-import { InvalidFileType } from "@/repositories/prisma/interfaces/invalid-file-type";
-import { FileRepositoryInterface } from "@/repositories/cloudflare/interfaces/file-repository-interface";
+
+import { ImageRepositoryInterface } from "@/repositories/cloudflare/interfaces/image-repository-interface";
+import { InvalidFileType } from "../erros/invalid-file-type";
 
 
 export interface UploadServiceRequest {
-    file: Buffer,
+    data: Buffer,
     name: string
 }
 
 export interface UploadServiceResponse {
-    fileName: string,
+    imageName: string,
     url: string,
-    typeFile: string,
-    key: string
+    typeImage: string,
+    key: number
 }
 
 export class UploadService {
-    private fileRepository: FileRepositoryInterface
+    private imageRepository: ImageRepositoryInterface
 
-    constructor(fileRepository: FileRepositoryInterface) {
-        this.fileRepository = fileRepository
+    constructor(imageRepository: ImageRepositoryInterface) {
+        this.imageRepository = imageRepository
     }
 
-    async upload(files: UploadServiceRequest[]): Promise<UploadServiceResponse[]> {
-        const uploadedFiles:UploadServiceResponse[] = []
-  
-        await Promise.all(files.map(async (data, index) => {
-            const baseUrl: string = 'https://pub-de25045fb0ec4544b76b2924a3cdf2dd.r2.dev';
+    async execute(image: UploadServiceRequest) {
+        try {
 
-            const typeFile = await this.getTypeFile(data.file);
+            const baseUrl: string = 'https://pub-822da8d957fb44e9a99e79bda8595410.r2.dev';
 
-            if (!typeFile || !this.isValidFileType(typeFile)) {
+            const typeImage = await this.getTypeImage(image.data);
+
+            if (!typeImage || !this.isValidImageType(typeImage)) {
                 throw new InvalidFileType()
             }
 
             const fileName = randomUUID()
 
-            await this.fileRepository.upload(data.file, fileName, typeFile)
+            await this.imageRepository.upload(image.data, fileName, typeImage)
 
-            const fileUrl = baseUrl.concat(`/${fileName}`)
+            const imageUrl = baseUrl.concat(`/${fileName}`)
 
-            uploadedFiles[index] = {
-                fileName: data.name, 
-                url: fileUrl,     
-                typeFile,         
-                key: fileName      
-            };
+            const uploadedFile = {
+                imageName: image.name,
+                url: imageUrl,
+                typeImage: typeImage,
+                key: fileName
+            }
 
-        
-        }))
-        return uploadedFiles
+            return uploadedFile
+        } catch (error) {
+            throw new Error('Failed to upload')
+        }
     }
 
-    isValidFileType(type: string) {
-        const allowedTypes = ['image/png', 'image/jpeg', 'application/pdf']; // svg, webp, mais tipos de imagens
+    isValidImageType(type: string) {
+        const allowedTypes = ['image/png', 'image/jpeg',]; 
         return allowedTypes.includes(type);
     }
 
-    async getTypeFile(file: Buffer) {
-        const detectedType = detect(file);
+    async getTypeImage(image: Buffer) {
+        const detectedType = detect(image);
         return detectedType.length > 0 ? detectedType[0].mime : null;
     }
 

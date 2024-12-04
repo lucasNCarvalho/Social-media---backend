@@ -1,5 +1,4 @@
 
-import { makeAuthenticateFactory } from '@/services/factories/make-authenticate-factory';
 import {FastifyRequest, FastifyReply} from 'fastify'
 
 export async function logout(request:FastifyRequest, reply: FastifyReply) {
@@ -11,10 +10,6 @@ export async function logout(request:FastifyRequest, reply: FastifyReply) {
         if (!refreshToken) {
             return reply.status(403).send({ error: 'No refresh token provided' });
         }
-
-        const authenticate = makeAuthenticateFactory()
-
-        authenticate.revokeByRefreshToken(refreshToken)
 
         return reply.clearCookie('refreshToken', {
             path: '/',

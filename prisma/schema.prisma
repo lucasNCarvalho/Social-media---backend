@@ -14,20 +14,19 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(uuid())
+  id            String   @id @default(uuid())
   name          String
-  userName      String         @unique
-  email         String         @unique
+  userName      String   @unique
+  email         String   @unique
   imageUrl      String?
   bio           String?
   password_hash String
-  created_at    DateTime       @default(now())
-  RefreshToken  RefreshToken[]
+  created_at    DateTime @default(now())
   posts         Post[]
-  likedPosts    Post[]         @relation("UserLikedPosts")
   savedPosts    Save[]
-  followers     Follow[]       @relation("Followers")
-  following     Follow[]       @relation("Following")
+  followers     Follow[] @relation("Followers")
+  following     Follow[] @relation("Following")
+  Like          Like[]
 
   @@map("users")
 }
@@ -40,7 +39,7 @@ model Post {
   location   String?
   created_at DateTime @default(now())
   creator    User     @relation(fields: [creatorId], references: [id])
-  likes      User[]   @relation("UserLikedPosts")
+  likedPosts Like[]
   saves      Save[]
   image      Image[]
 
@@ -52,12 +51,24 @@ model Image {
   postId    String
   url       String
   fileName  String
-  key       Int
+  key       String
   typeFile  String
   createdAt DateTime @default(now())
-  post      Post     @relation(fields: [postId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@map("image")
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  userId    String
+  postId    String
+  user      User     @relation(fields: [userId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@map("likes")
 }
 
 model Save {
@@ -65,9 +76,10 @@ model Save {
   userId    String
   postId    String
   user      User     @relation(fields: [userId], references: [id])
-  post      Post     @relation(fields: [postId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 
+  @@unique([userId, postId])
   @@map("saves")
 }
 
@@ -82,15 +94,4 @@ model Follow {
 
   @@id([followerId, followingId])
   @@map("follows")
-}
-
-model RefreshToken {
-  id        String   @id @default(uuid())
-  userId    String
-  token     String   @unique
-  revoked   Boolean  @default(false)
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-
-  @@map("refreshToken")
 }

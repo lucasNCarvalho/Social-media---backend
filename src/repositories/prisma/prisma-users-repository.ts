@@ -1,4 +1,4 @@
-import { Prisma, User} from "@prisma/client";
+import { Prisma} from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { UsersRepositoryInterface } from "./interfaces/users-repository-interface";
 
@@ -20,12 +20,34 @@ export class PrismaUserRepository implements UsersRepositoryInterface {
     }
     
     async findById(userId: string) {
-        return await prisma.user.findUnique({
+
+  
+        const user = await prisma.user.findUnique({
             where: {
                 id: userId,
-            }
-        })
+            },
+            include: {
+                _count: {
+                    select: {
+                        posts: true,
+                    },
+                },
+            },
+        });
+    
+        if (!user) {
+            return null;
+        }
+
+       
+        const { _count, ...userWithoutCount } = user;
+    
+        return {
+            ...userWithoutCount,
+            postsCount: _count.posts,
+        };
     }
+    
     
     async findByUserName(userName: string) {
         return await prisma.user.findUnique({
@@ -34,7 +56,14 @@ export class PrismaUserRepository implements UsersRepositoryInterface {
             }
         });
     }
-    
-    
-    
+
+    async update(id: string, data: Prisma.UserUpdateInput) {
+        await prisma.user.update({
+            where: {
+                id,
+            },
+            data
+        })
+    }
+        
 }

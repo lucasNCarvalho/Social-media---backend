@@ -7,14 +7,6 @@ export async function refresh(request: FastifyRequest, reply: FastifyReply) {
     try {
         await request.jwtVerify({ onlyCookie: true })
 
-        const authenticate = makeAuthenticateFactory()
-
-        const storedToken = await authenticate.getToken(request.cookies.refreshToken || '')
-
-        if (!storedToken || storedToken.revoked) {
-            throw new Error()
-        }
-
         const token = await reply.jwtSign({}, {
             sign: {
                 sub: request.user.sub
@@ -24,11 +16,9 @@ export async function refresh(request: FastifyRequest, reply: FastifyReply) {
         const refreshToken = await reply.jwtSign({}, {
             sign: {
                 sub: request.user.sub,
-                expiresIn: '1m'
+                expiresIn: '7d'
             }
         })
-
-       await authenticate.saveRefreshToken({ refreshToken, userId: request.user.sub })
 
         return reply
         .setCookie('refreshToken', refreshToken, {

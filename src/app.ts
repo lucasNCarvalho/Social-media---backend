@@ -6,12 +6,18 @@ import { ZodError } from "zod";
 import fastifyCookie from "@fastify/cookie";
 import fastifyCors from "@fastify/cors";
 import { userRoutes } from "./http/controllers/user/routes";
-
-
+import fastifyMultipart from "@fastify/multipart";
+import { postRoutes } from "./http/controllers/post/routes";
+import { followRoutes } from "./http/controllers/follow/routes";
 
 
 export const app = fastify()
-app.register(require('@fastify/multipart'))
+
+app.register(fastifyMultipart, {
+    limits: {
+        fileSize: 50 * 1024 * 1024 
+    }
+});
 
 app.register(fastifyCookie)
 
@@ -27,7 +33,7 @@ app.register(fastifyJwt, {
         signed: false,
     },
     sign: {
-        expiresIn: '5s'
+        expiresIn: '10m'
     }
 })
 
@@ -45,17 +51,11 @@ app.register(fastifyJwt, {
 
 
 app.register(userRoutes)
+app.register(postRoutes)
+app.register(followRoutes)
 
 
 app.setErrorHandler((error, _, reply) => {
-
-    console.log(error)
-
-    if (error.name === 'FastifyError') {
-        return reply
-          .status(401)
-          .send({ message: 'Invalid JWT token.', code: error.code })
-      }
 
     if(error instanceof ZodError) {
         return reply 
