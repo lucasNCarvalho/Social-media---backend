@@ -1,6 +1,4 @@
 import { UsersRepositoryInterface } from "@/repositories/prisma/interfaces/users-repository-interface";
-import { User } from "@prisma/client";
-import { UserEmailAlreadyExistsError } from "../erros/userEmail-already-exists";
 import { UserNameAlreadyExistsError } from "../erros/userUserName-already-exists";
 import { hash } from "bcryptjs";
 import { ResourceNotFoundError } from "../erros/resource-not-found-error";
@@ -10,6 +8,8 @@ interface UpdateUserServiceRequest {
     name?: string;
     userName?: string;
     password?: string;
+    imageUrl?: string;
+    bio?: string;
 }
 
 export class UpdateUserService {
@@ -24,8 +24,10 @@ export class UpdateUserService {
         name,
         userName,
         password,
+        bio,
+        imageUrl
     }: UpdateUserServiceRequest) {
-
+      
         const user = await this.usersRepository.findById(id);
 
         if (!user) {
@@ -51,6 +53,8 @@ export class UpdateUserService {
             name,
             userName,
             password_hash: passwordHash,
+            bio,
+            imageUrl
         });
 
     }

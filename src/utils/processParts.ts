@@ -20,12 +20,13 @@ export async function processParts({ request, allowedFields }: processPartsProps
                 name: part.filename,
             };
         } else if (part.type === 'field' && allowedFields.includes(part.fieldname)) {
+            console.log('c')
             fields[part.fieldname] = part.value as string;
         }
     }
 
     return {
         ...fields,
-        image, 
+        ...(image && { image }),
     };
 }
