@@ -62,10 +62,6 @@ app.setErrorHandler((error, _, reply) => {
             .status(400)
             .send({message: 'Validation error.', issue: error.format()})
     }   
-
-    if(env.NODE_ENV !== 'production') {
-        console.error(error)
-    } 
  
     return reply.status(500).send({message: 'Internal server error'})
 })
