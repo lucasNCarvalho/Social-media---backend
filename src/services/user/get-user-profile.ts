@@ -6,11 +6,22 @@ import { FollowRepositoryInterface } from "@/repositories/prisma/interfaces/foll
 interface GetUserProfileServiceRequest {
     loggedUserId: string;
     userId?: string;
+    name?: string
 }
 
-type GetUserProfileServiceResponse = {
-    user: (Partial<User> & { followersCount: number; followingCount: number }) | null;
-};
+type UserResponseSingle = Partial<User> & {
+    followersCount: number;
+    followingCount: number;
+  };
+  
+  type UserResponseMultiple = (Partial<User> & {
+    isFollowing: boolean;
+  })[];
+  
+  type GetUserProfileServiceResponse =
+    | { user: UserResponseSingle | null }
+    | { user: UserResponseMultiple };
+
 
 export class GetUserProfileService {
     private userRepository: UsersRepositoryInterface;
@@ -21,7 +32,7 @@ export class GetUserProfileService {
         this.followRepository = followRepository;
     }
 
-    async execute({ loggedUserId, userId }: GetUserProfileServiceRequest): Promise<GetUserProfileServiceResponse> {
+    async execute({ loggedUserId, userId, name }: GetUserProfileServiceRequest): Promise<GetUserProfileServiceResponse> {
         let user: User | null;
 
         if (userId) {
@@ -43,6 +54,36 @@ export class GetUserProfileService {
                 }
             };
         }
+
+        if (name && loggedUserId) {
+            let users = await this.userRepository.findByName(name);
+        
+        
+            users = users.filter(u => u.id !== loggedUserId)
+        
+            if (users.length === 0) {
+                return {
+                    user: [],
+                }
+            }
+        
+            const usersWithIsFollowing = await Promise.all(
+                users.map(async (u) => {
+                    const isFollowing = await this.followRepository.isFollowing(u.id, loggedUserId)
+                    const { password_hash, ...safeUser } = u;
+                    return {
+                        ...safeUser,
+                        isFollowing,
+                    }
+                })
+            );
+        
+            return {
+                user: usersWithIsFollowing,
+            };
+        }
+        
+          
 
         user = await this.userRepository.findById(loggedUserId);
 

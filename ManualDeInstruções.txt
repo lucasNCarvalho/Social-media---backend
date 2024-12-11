@@ -1,0 +1,18 @@
+Como rodar o Front-End 
+
+Abra o projeto com algum editor de código.
+Abra o terminal e acesse a raiz do projeto onde se encontra o package.json
+Digite no terminal npm i (seu gerenciador de dependências)
+Com todas as dependências instaladas execute o comando npm run dev
+Após o servidor iniciar, será gerado um link de acesso localhost
+
+Pontos de atenção:
+	no .env é preciso ter a variável de ambiente     VITE_LOOMY_API_URL="http://localhost:3333"
+
+
+Como rodar o Back-end
+
+É necessário ter docker instalado na maquina.
+Abra o projeto com algum editor de código.
+Abra o terminal e acesse a raiz do projeto onde se encontra o package.json
+

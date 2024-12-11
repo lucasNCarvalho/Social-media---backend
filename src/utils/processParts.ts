@@ -11,6 +11,7 @@ export async function processParts({ request, allowedFields }: processPartsProps
     let image: { data: Buffer; name: string } | null = null;
 
     for await (const part of request.parts()) {
+        
         if (part.type === 'file' && part.fieldname === 'image') {
             const fileUpload = makeUploadFactory();
             const fileBuffer = await fileUpload.streamToBuffer(part.file);
@@ -20,7 +21,7 @@ export async function processParts({ request, allowedFields }: processPartsProps
                 name: part.filename,
             };
         } else if (part.type === 'field' && allowedFields.includes(part.fieldname)) {
-            console.log('c')
+      
             fields[part.fieldname] = part.value as string;
         }
     }

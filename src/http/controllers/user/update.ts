@@ -7,6 +7,8 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 
 export async function updateUser(request: FastifyRequest, reply: FastifyReply) {
+    await request.jwtVerify();
+
     const paramsSchema = z.object({
         userId: z.string().uuid(),
     });
@@ -25,17 +27,17 @@ export async function updateUser(request: FastifyRequest, reply: FastifyReply) {
     try {
         const fileUpload = makeUploadFactory()
         const updateUserService = makeUpdateUserFactory()
-
+   
         const allowedFields = ["name", "userName", "password", "bio"]
 
         const { userId } = paramsSchema.parse(request.params);
-
+   
         if (request.user.sub !== userId) {
             return reply.status(401).send({ error: "Acesso não autorizado. Você não tem permissão para atualizar este usuário." });
         }
 
         const parts = await processParts({ request, allowedFields });
- 
+     
         const { image, name, userName, password, bio } = updateUserSchema.parse(parts);
       
         let imageUrl: string | undefined;

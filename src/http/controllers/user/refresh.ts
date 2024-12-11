@@ -1,5 +1,4 @@
 
-import { makeAuthenticateFactory } from "@/services/factories/make-authenticate-factory";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 

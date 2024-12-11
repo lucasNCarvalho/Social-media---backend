@@ -21,8 +21,58 @@ export class PrismaFollowRepository implements FollowRepositoryInterface {
                 followerId: userId,
             },
         });
-
     }
+
+    async getFollowers(userId: string) {
+        const followers = await prisma.follow.findMany({
+            where: {
+                followingId: userId,
+            },
+            select: {
+                follower: {
+                    select: {
+                        id: true,
+                        name: true,
+                        userName: true,
+                        imageUrl: true,
+                    },
+                },
+            },
+        });
+    
+        return followers.map(f => ({
+            id: f.follower.id,
+            name: f.follower.name,
+            userName: f.follower.userName,
+            imageUrl: f.follower.imageUrl,
+        }));
+    }
+    
+    async getFollowing(userId: string) {
+        const following = await prisma.follow.findMany({
+            where: {
+                followerId: userId,
+            },
+            select: {
+                following: {
+                    select: {
+                        id: true,
+                        name: true,
+                        userName: true,
+                        imageUrl: true,
+                    },
+                },
+            },
+        });
+    
+        return following.map(f => ({
+            id: f.following.id,
+            name: f.following.name,
+            userName: f.following.userName,
+            imageUrl: f.following.imageUrl,
+        }));
+    }
+    
 
     async isFollowing(userId: string, loggedUserId: string) {
         const follow = await prisma.follow.findFirst({
@@ -34,6 +84,7 @@ export class PrismaFollowRepository implements FollowRepositoryInterface {
 
         return !!follow;
     }
+
 
     async followUser(loggedUserId: string, userId: string): Promise<void> {
         await prisma.follow.create({

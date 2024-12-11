@@ -45,7 +45,7 @@ export async function updatePost(request: FastifyRequest, reply: FastifyReply) {
 
        
         if (parsedData.like !== undefined) {
-            console.log("a",parsedData)
+    
             await updatePostService.updateLikes({
                 postId,
                 userId: request.user.sub,
@@ -54,7 +54,7 @@ export async function updatePost(request: FastifyRequest, reply: FastifyReply) {
         }
 
         if (parsedData.save !== undefined) {
-            console.log("a",parsedData)
+       
             await updatePostService.updateSaves({
                 postId,
                 userId: request.user.sub,

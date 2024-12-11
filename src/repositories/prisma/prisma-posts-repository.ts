@@ -129,6 +129,134 @@ export class PrismaPostRepository implements PostsRepositoryInterface {
         }));
     }
     
+    async getMostLikedPostsThisWeek() {
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7); 
+    
+        const posts = await prisma.post.findMany({
+            where: {
+                created_at: {
+                    gte: oneWeekAgo, 
+                },
+            },
+            orderBy: [
+                { likedPosts: { _count: "desc" } }, 
+                { created_at: "desc" }, 
+            ],
+            take: 20, 
+            include: {
+                creator: {
+                    select: {
+                        id: true,
+                        name: true,
+                        userName: true,
+                        imageUrl: true,
+                    },
+                },
+                image: {
+                    select: {
+                        url: true,
+                    },
+                },
+                likedPosts: {
+                    take: 100,
+                    orderBy: {
+                        createdAt: "desc",
+                    },
+                    select: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                userName: true,
+                                imageUrl: true,
+                            },
+                        },
+                    },
+                },
+                saves: {
+                    select: {
+                        userId: true,
+                    },
+                },
+            },
+        });
+    
+        return posts.map((post) => ({
+            ...post,
+            saves: post.saves.length > 0,
+            likedPosts: post.likedPosts.map((like) => like.user),
+        }));
+    }
+    
+    
+    async getLikesByPostId(postId: string) {
+        const likes = await prisma.like.findMany({
+            where: {
+                postId,
+            },
+            select: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        imageUrl: true,
+                    },
+                },
+            },
+        });
+    
+        return likes.map((like) => like.user);
+    }
+
+    async findByTag(tag: string) {
+        const postIds = await prisma.$queryRaw<{ id: string }[]>`
+            SELECT "id" 
+            FROM "posts"
+            WHERE array_to_string("tags", ',') ILIKE ${'%' + tag + '%'}
+        `;
+    
+        if (postIds.length === 0) {
+            return [];
+        }
+    
+        return prisma.post.findMany({
+            where: {
+                id: {
+                    in: postIds.map((p) => p.id),
+                },
+            },
+            include: {
+                creator: {
+                    select: {
+                        id: true,
+                        name: true,
+                        userName: true,
+                        imageUrl: true,
+                    },
+                },
+                image: {
+                    select: {
+                        url: true,
+                    },
+                },
+                likedPosts: {
+                    select: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                userName: true,
+                                imageUrl: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+    }
+    
+       
 
     async findById(postId: string, userId?: string) {
         const post = await prisma.post.findUnique({
@@ -238,6 +366,7 @@ export class PrismaPostRepository implements PostsRepositoryInterface {
         }
     }
 
+    
 
     async delete(postId: string) {
         await prisma.post.delete({

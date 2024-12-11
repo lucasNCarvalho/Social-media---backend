@@ -11,9 +11,9 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
     })
 
     const {email, password} = authenticateBodySchema.parse(request.body)
-    console.log('a', email)
+
     try {
-        console.log('a', email)
+     
         const authenticate = makeAuthenticateFactory()
 
         const {user} = await authenticate.execute({

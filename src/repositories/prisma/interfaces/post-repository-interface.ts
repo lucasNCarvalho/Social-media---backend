@@ -9,4 +9,7 @@ export interface PostsRepositoryInterface {
     updateLikes(postId: string, userId: string, action: 'add' | 'remove'): Promise<void>;
     updateSaves(postId: string, userId: string, action: 'add' | 'remove'): Promise<void>;
     delete(postId: string): Promise<void>
+    getLikesByPostId(postId: string): Promise<{ id: string; name: string; imageUrl: string | null }[]>;
+    getMostLikedPostsThisWeek(): Promise<Post[]>
+    findByTag(tag: string): Promise<Post[]>;
 }

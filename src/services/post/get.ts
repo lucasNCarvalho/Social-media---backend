@@ -8,7 +8,7 @@ interface GetAllPostServiceRequest {
     onlyOwnPosts?: boolean
 }
 
-type GetAllPostServiceResponse = {
+type PostServiceResponse = {
     posts?: Post[];
 
 };
@@ -26,6 +26,11 @@ type GetPostServiceResponse = {
     post?: Post;
 };
 
+interface GetPostsByTagServiceRequest {
+    tag: string;
+}
+
+
 
 export class GetPostService {
     private postRepository: PostsRepositoryInterface;
@@ -34,7 +39,7 @@ export class GetPostService {
         this.postRepository = postRepository;
     }
 
-    async getAll({ userId, onlyOwnPosts }: GetAllPostServiceRequest): Promise<GetAllPostServiceResponse> {
+    async getAll({ userId, onlyOwnPosts }: GetAllPostServiceRequest): Promise<PostServiceResponse> {
 
         const posts = await this.postRepository.getAll(userId, { onlyOwnPosts });
 
@@ -56,9 +61,16 @@ export class GetPostService {
 
     }
 
-    async getSavedPosts({ userId }: getAllPostSavedByUserIdRequest): Promise<GetAllPostServiceResponse> {
+    async getSavedPosts({ userId }: getAllPostSavedByUserIdRequest): Promise<PostServiceResponse> {
         const posts = await this.postRepository.getSavedPosts(userId);
 
         return { posts };
     }
+
+    async getByTag({ tag }: GetPostsByTagServiceRequest): Promise<PostServiceResponse> {
+        const posts = await this.postRepository.findByTag(tag);
+
+        return { posts };
+    }
+
 }

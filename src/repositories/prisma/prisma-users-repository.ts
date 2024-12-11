@@ -65,5 +65,16 @@ export class PrismaUserRepository implements UsersRepositoryInterface {
             data
         })
     }
+
+    async findByName(name: string) {
+        return await prisma.user.findMany({
+            where: {
+                name: {
+                    contains: name,
+                    mode: 'insensitive',
+                },
+            },
+        })
+    }
         
 }
